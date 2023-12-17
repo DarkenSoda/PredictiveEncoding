@@ -49,7 +49,7 @@ public class PredictiveEncoding {
                     }
                 }
             }
-            Table quantizerTable=generateQuantizer(difference,originalHeight,originalWidth,2);
+            Table quantizerTable=generateQuantizer(difference,originalHeight,originalWidth,8);
             for (int i = 1; i < originalHeight; i++) {
                 for (int j = 1; j < originalWidth; j++) {
                     Row row=getRowByNumber(difference[i][j],quantizerTable);
@@ -99,21 +99,15 @@ public class PredictiveEncoding {
         int max=getMax(diff, height, width);
         int min=getMin(diff, height, width);
         double levels=Math.pow(2, bits);
-        int step=(int)Math.ceil((double)(max-min+1)/levels);
+        int step=(int)Math.ceil((double)(max-min-1)/levels);
         Table table=new Table();
         int start=min;
         for(int i = 0; i < levels; i++){
             Row row=new Row();
-            if(i==levels-1){
-                row.setEnd(max);
-                row.setQ_( (start + max)/2);
-
-            }else{
-                row.setEnd((start + step-1));
-                row.setQ_((start+(start+step-1))/2);
-            }
-            row.setQ(i);
             row.setStart(start);
+            row.setEnd((start + step-1));
+            row.setQ_((int)Math.ceil(((double)(start+(start+step-1)))/2));
+            row.setQ(i);
             table.setRow(row);
             start+=step;
         }
@@ -151,11 +145,15 @@ public class PredictiveEncoding {
             int width = dataInputStream.readInt();
             int height = dataInputStream.readInt();
             int [][] quantizedDifference=new int[height][width];
-            int [][] dequantizedDifference=new int[height-1][width-1];
+            int [][] dequantizedDifference=new int[height][width];
             int [][] decodeImage=new int[height][width];
            for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    quantizedDifference[i][j]=dataInputStream.readInt();
+                    int x=dataInputStream.readInt();
+                    if(i==0||j==0){
+                        dequantizedDifference[i][j]=x;
+                    }
+                    quantizedDifference[i][j]=x;
                 }
             }
             Table quantizerTable=new Table();
@@ -168,7 +166,7 @@ public class PredictiveEncoding {
             }
             for (int i = 1; i < height; i++) {
                 for (int j = 1; j < width; j++) {
-                    dequantizedDifference[i-1][j-1]=getRowByQ(quantizedDifference[i][j], quantizerTable).getQ_();
+                    dequantizedDifference[i][j]=getRowByQ(quantizedDifference[i][j], quantizerTable).getQ_();
                 }
             }
             for (int i = 0; i < height; i++) {
@@ -187,7 +185,7 @@ public class PredictiveEncoding {
                         }else{
                             x=a+c-b;
                         }
-                        decodeImage[i][j]=x+dequantizedDifference[i-1][j-1];
+                        decodeImage[i][j]=x+dequantizedDifference[i][j];
                     }
                     
                 }
@@ -197,10 +195,7 @@ public class PredictiveEncoding {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    int red = (decodeImage[i][j] & 0xFF0000) >> 16;
-                    int green = (decodeImage[i][j] & 0xFF00) >> 8;
-                    int blue = decodeImage[i][j] & 0xFF;
-                    int rgb = (red << 16) | (green << 8) | blue;
+                    int rgb = (decodeImage[i][j] << 16) | (decodeImage[i][j] << 8) | decodeImage[i][j];
                     image.setRGB(j, i, rgb);
                 }
             }
