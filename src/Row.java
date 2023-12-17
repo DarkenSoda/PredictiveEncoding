@@ -1,8 +1,8 @@
 public class Row {
-    int start;
-    int end;
-    int q;
-    int q_;
+    private int start;
+    private int end;
+    private int q;
+    private int q_;
     public Row()
     {
         start = 0;
