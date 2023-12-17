@@ -10,12 +10,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
+import javafx.util.converter.IntegerStringConverter;
 
 public class PredictiveController {
     // #region FXML Fields
+    @FXML
+    private TextField levelsText;
+
     @FXML
     private Button selectOriginalImageButton;
 
@@ -58,9 +64,17 @@ public class PredictiveController {
         if (file == null)
             return;
 
+        int levels;
+        try {
+            levels = Integer.parseInt(levelsText.getText());
+        } catch (Exception e) {
+            System.out.println("Invalid input!");
+            return;
+        }
+
         // Compress originalImage and save as bin file
         BufferedImage image = SwingFXUtils.fromFXImage(originalImage.getImage(), null);
-        PredictiveEncoding.Compress(image, file);
+        PredictiveEncoding.Compress(image, levels, file);
     }
 
     @FXML
@@ -142,6 +156,11 @@ public class PredictiveController {
         InputStream stream = new FileInputStream(selectedImage.getAbsolutePath());
         Image image = new Image(stream);
         originalImage.setImage(image);
+    }
+
+    @FXML
+    void initialize() {
+        levelsText.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
     }
     // #endregion
 
