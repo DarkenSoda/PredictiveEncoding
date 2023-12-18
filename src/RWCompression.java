@@ -29,9 +29,7 @@ public class RWCompression {
                 int red = (pixel & 0xff0000) >> 16;
                 int green = (pixel & 0x00ff00) >> 8;
                 int blue = (pixel & 0x0000ff);
-                // int grayScale = Math.max(green, Math.max(red, blue));
-                // int grayScale = (green + red + blue) / 3;
-                int grayScale = red;
+                int grayScale = (green + red + blue) / 3;
                 imagePixels[i][j] = grayScale;
             }
         }

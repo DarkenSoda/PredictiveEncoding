@@ -175,6 +175,10 @@ public class PredictiveEncoding {
                         }
 
                         decodeImage[i][j] = x + dequantizedDifference[i][j];
+                        if (decodeImage[i][j] < 0)
+                            decodeImage[i][j] = 0;
+                        if (decodeImage[i][j] > 255)
+                            decodeImage[i][j] = 255;
                     }
                 }
             }
@@ -182,7 +186,7 @@ public class PredictiveEncoding {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             for (int i = 0; i < height; i++) {
                 for (int j = 0; j < width; j++) {
-                    int rgb = (decodeImage[i][j] << 16) | (decodeImage[i][j] << 8) | decodeImage[i][j];
+                    int rgb = 0xff000000 | (decodeImage[i][j] << 16) | (decodeImage[i][j] << 8) | decodeImage[i][j];
                     image.setRGB(j, i, rgb);
                 }
             }
