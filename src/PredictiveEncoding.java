@@ -93,14 +93,19 @@ public class PredictiveEncoding {
         int min = min_max.getKey();
         int max = min_max.getValue();
 
-        int step = (int) Math.ceil((double) (max - min + 1) / levels);
+        int step = (int) Math.ceil((double) (max - min) / levels);
         Table table = new Table();
         int start = min;
         for (int i = 0; i < levels; i++) {
             Row row = new Row();
+            if (i + 1 == levels) {
+                row.setEnd(min_max.getValue());
+                row.setQ_((int) Math.ceil((double) (start + min_max.getValue()) / 2));
+            } else {
+                row.setEnd(start + step - 1);
+                row.setQ_((int) Math.ceil((double) (start + row.getEnd()) / 2));
+            }
             row.setStart(start);
-            row.setEnd(start + step - 1);
-            row.setQ_((int) Math.ceil((double) (start + row.getEnd()) / 2));
             row.setQ(i);
             table.addRow(row);
             start += step;
