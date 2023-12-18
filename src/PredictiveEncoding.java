@@ -116,9 +116,15 @@ public class PredictiveEncoding {
         for (int i = 0; i < levels; i++) {
             Row row = new Row();
             for (int j = 0; j < 3; j++) {
+                if (i + 1 == levels) {
+                    row.end[j] = min_max.get(j).getValue();
+                    row.Q_[j] = (int) Math.ceil((double) (starts[j] + row.end[j]) / 2);
+                } else {
+                    row.end[j] = starts[j] + steps[j] - 1;
+                    row.Q_[j] = (int) Math.ceil((double) (starts[j] + row.end[j]) / 2);
+                }
+
                 row.start[j] = starts[j];
-                row.end[j] = starts[j] + steps[j] - 1;
-                row.Q_[j] = (int) Math.ceil((double) (starts[j] + row.end[j]) / 2);
                 row.Q[j] = i;
                 starts[j] += steps[j];
             }
@@ -177,7 +183,8 @@ public class PredictiveEncoding {
             for (int i = 1; i < height; i++) {
                 for (int j = 1; j < width; j++) {
                     for (int k = 0; k < 3; k++) {
-                        dequantizedDifference[i][j][k] = getRowByQ(quantizedDifference[i][j][k], quantizerTable, k).Q_[k];
+                        dequantizedDifference[i][j][k] = getRowByQ(quantizedDifference[i][j][k], quantizerTable,
+                                k).Q_[k];
                     }
                 }
             }
@@ -201,6 +208,10 @@ public class PredictiveEncoding {
                             }
 
                             decodeImage[i][j][k] = x + dequantizedDifference[i][j][k];
+                            if (decodeImage[i][j][k] < 0)
+                                decodeImage[i][j][k] = 0;
+                            if (decodeImage[i][j][k] > 255)
+                                decodeImage[i][j][k] = 255;
                         }
                     }
                 }
